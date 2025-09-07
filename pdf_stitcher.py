@@ -1,4 +1,4 @@
-##Esto pretende unir pdfs
+##Esto pretende unir o recortar pdfs
 
 import PyPDF2
 import os
@@ -17,7 +17,7 @@ def main():
 
     while True:
         # Se le pide al usuario un archivo
-        ruta_pdf = input("Escribe la ruta al archivo PDF: ").strip().strip("'").strip('"')
+        ruta_pdf = input("Escribe la ruta al archivo PDF: ").strip("'").strip('"')
 
         if not os.path.isfile(ruta_pdf):
             print("Archivo no encontrado, por favor escribe una ruta válida.")

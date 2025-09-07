@@ -1,55 +1,62 @@
 """
+Funciona en linux!
 Analiza un pdf y usa reconocimiento
 óptico de caracteres (OCR) para hacer
 una transcripcion digital
-
-...
-
-Lee el texto y lo escribe pues
 """
 
 import pytesseract
 from pdf2image import convert_from_path
 import os
-from PIL import Image
+
 import re
 import glob
 
-pytesseract.pytesseract.tesseract_cmd = r'/home/galen/Downloads/OBSERVACIONES PARA LA BOLETA POR CAMPOS FORMATIVOS Y FASES.pdf'  ### Esta es la ruta donde
 
-
-### está el programa de OCR
 def process_document(pdf_path, output_txt_path, language='spa'):
     print(f"Convirtiendo PDF {pdf_path} a imágenes...")
-    # Convierte PDF a imágenes
-    poppler_path = r"C:\Users\shipp\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin"
-    pages = convert_from_path(pdf_path, 300, poppler_path=poppler_path)  # 300 DPI para buena calidad
+
+    try:
+        pages = convert_from_path(pdf_path, 300)  # 300 DPI for good quality
+
+    except Exception as e:
+        print(f"Error converting PDF to images: {e}")
+        print("Make sure poppler is installed: sudo apt-get install poppler-utils")
+        return None
 
     all_text = []
 
     for i, page in enumerate(pages):
         print(f"Procesando página {i + 1}/{len(pages)}...")
 
-        # Mejora de imágen para OCR
-        page = page.convert('L')  # Convierte a escala de grises
+        # Image improvement for OCR
+        page = page.convert('L')  # Convert to grayscale
 
-        # Aplica OCR a la imágen
-        text = pytesseract.image_to_string(page, lang=language)
+        try:
+            # Apply OCR to the image
+            text = pytesseract.image_to_string(page, lang=language)
+        except Exception as e:
+            print(f"Error in OCR processing: {e}")
+            print("Make sure tesseract is installed: sudo apt-get install tesseract-ocr tesseract-ocr-spa")
+            continue
 
-        # Limpia el texto
-        text = re.sub(r'\n{3,}', '\n\n', text)  # Quita líneas excesivas
+        # Clean the text
+        text = re.sub(r'\n{3,}', '\n\n', text)  # Remove excessive lines
 
-        # Agrega un separador de páginas
+        # Add page separator
         page_header = f"\n\n----- PÁGINA {i + 1} -----\n\n"
         all_text.append(page_header + text)
 
-    # Guarda el texto a un archivo .txt
-    with open(output_txt_path, 'w', encoding='utf-8') as f:
-        f.write(''.join(all_text))
+    # Save text to .txt file
+    try:
+        with open(output_txt_path, 'w', encoding='utf-8') as f:
+            f.write(''.join(all_text))
+        print(f"OCR completo! Texto guardado en {output_txt_path}")
+    except Exception as e:
+        print(f"Error saving file: {e}")
+        return None
 
-    print(f"OCR completo! Texto guardado en {output_txt_path}")
-
-    # Entrega el texto
+    # Return the text
     return ''.join(all_text)
 
 
@@ -83,9 +90,12 @@ def process_folder(folder_path, output_folder=None, language='spa'):
 
         try:
             # Process the document
-            process_document(pdf_path, output_txt_path, language=language)
+            result = process_document(pdf_path, output_txt_path, language=language)
 
-            print(f"Successfully processed: {os.path.basename(pdf_path)}")
+            if result:
+                print(f"Successfully processed: {os.path.basename(pdf_path)}")
+            else:
+                print(f"Failed to process: {os.path.basename(pdf_path)}")
 
         except Exception as e:
             print(f"Error processing {os.path.basename(pdf_path)}: {str(e)}")
@@ -99,11 +109,19 @@ if __name__ == "__main__":
     # Specify the folder containing PDF files
     folder_path = r"/home/galen/Desktop/sitio_de_pruebas"
 
-    # Optional: specify a different output folder
-    # output_folder = r"C:\Users\shipp\Desktop\MINUTAS_PARO 2025 BUAP\OCR_OUTPUT"
+    # Check if tesseract is available
+    try:
+        version = pytesseract.get_tesseract_version()
+        print(f"Tesseract version {version} is available!")
+    except:
+        print("Tesseract not found. Please install with:")
+        print("sudo apt-get install tesseract-ocr tesseract-ocr-spa")
+        exit(1)
+
+    # Check if folder exists
+    if not os.path.exists(folder_path):
+        print(f"Folder not found: {folder_path}")
+        exit(1)
 
     # Process all PDFs in the folder
     process_folder(folder_path)
-
-    # Alternative: Process with custom output folder
-    # process_folder(folder_path, output_folder)
