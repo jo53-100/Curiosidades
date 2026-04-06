@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+echo "Iniciando..."
+for i in {1..5}; do
+	for x in {1..2};do
+		echo -n "."
+		sleep 0.5
+	done
+	echo ""
+done
+sleep 2
+echo "hola ariana, jose me pidió que te dijera que te extraña mucho" | cowsay
