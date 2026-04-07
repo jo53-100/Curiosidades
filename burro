@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "Iniciando..."
+for i in {1..5}; do
+	for x in {1..2};do
+		echo -n "."
+		sleep 0.5
+	done
+	echo ""
+done
+sleep 2
+echo "hola ariana, jose me dijo que te dijera que lo siente, y que es la ultima vez que hace bromas de mal gusto, y q porfis le avises cuando llegues a casa" | cowsay
